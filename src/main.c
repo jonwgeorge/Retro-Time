@@ -13,6 +13,20 @@ TextLayer *date_layer;
 TextLayer *battery_layer;
 TextLayer *charge_layer;
 TextLayer *connection_layer;
+InverterLayer *inverter_layer;
+static char INVERT[4] = "off";
+
+static void set_theme() {
+  if (persist_exists(KEY_INVERT)) {
+    persist_read_string(KEY_INVERT, INVERT, 4);
+  }
+
+  APP_LOG(APP_LOG_LEVEL_INFO, "SETTING INVERT: %s", INVERT);
+        
+  bool hide = strcmp(INVERT, "off") == 0 ? true : false;
+                
+  layer_set_hidden(inverter_layer_get_layer(inverter_layer), hide);
+}
 
 static void handle_battery(BatteryChargeState charge_state) {
   static char battery_text[] = "\uf004 \uf004 \uf004 \uf004 \uf0e7";
@@ -44,7 +58,7 @@ static void handle_battery(BatteryChargeState charge_state) {
 static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
   static char time_text[] = "00:00 AM"; // Needs to be static because it's used by the system later.
   static char date_text[] = "Mon, Jan 31"; // Needs to be static because it's used by the system later.
-
+  
   strftime(time_text, sizeof(time_text), "%I:%M %p", tick_time);
   text_layer_set_text(time_layer, time_text);
   
@@ -74,14 +88,15 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "In received called");
   // Check for fields you expect to receive
   Tuple *invert_tuple = dict_find(received, KEY_INVERT);
-  Tuple *hour_tuple = dict_find(received, KEY_HOUR_STYLE);
-
+  
   // Act on the found fields received
   if (invert_tuple) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Invert Screen: %s", invert_tuple->value->cstring);
-  }
-  if (hour_tuple) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "24 Hour Clock: %s", hour_tuple->value->cstring);
+    APP_LOG(APP_LOG_LEVEL_INFO, "SELECTED INVERT: %s", invert_tuple->value->cstring);
+
+    persist_write_string(KEY_INVERT, invert_tuple->value->cstring);
+    strncpy(INVERT, invert_tuple->value->cstring, 4);
+                
+    set_theme();
   }
 }
 
@@ -143,6 +158,9 @@ static void do_init(void) {
   text_layer_set_font(charge_layer, awesome_font);
   text_layer_set_text_alignment(charge_layer, GTextAlignmentLeft);
   text_layer_set_text(charge_layer, "\uf004 \uf004 \uf004 \uf004");
+  
+  // Create the inverter layer
+  inverter_layer = inverter_layer_create(frame);
 
   // Ensures time is displayed immediately (will break if NULL tick event accessed).
   // (This is why it's a good idea to have a separate routine to do the update itself.)
@@ -162,12 +180,15 @@ static void do_init(void) {
   const uint32_t inbound_size = 64;
   const uint32_t outbound_size = 64;
   app_message_open(inbound_size, outbound_size);
+  
+  set_theme();
 
   layer_add_child(root_layer, text_layer_get_layer(time_layer));
   layer_add_child(root_layer, text_layer_get_layer(date_layer));
   layer_add_child(root_layer, text_layer_get_layer(connection_layer));
   layer_add_child(root_layer, text_layer_get_layer(battery_layer));
   layer_add_child(root_layer, text_layer_get_layer(charge_layer));
+  layer_add_child(root_layer, inverter_layer_get_layer(inverter_layer));
 }
 
 static void do_deinit(void) {
@@ -178,6 +199,7 @@ static void do_deinit(void) {
   text_layer_destroy(connection_layer);
   text_layer_destroy(battery_layer);
   text_layer_destroy(charge_layer);
+  inverter_layer_destroy(inverter_layer);
   window_destroy(window);
 }
 
