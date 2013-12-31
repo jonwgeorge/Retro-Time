@@ -2,7 +2,6 @@
 #include "pebble.h"
 
 enum {
-  AKEY_NUMBER,
   AKEY_TEXT,
 };
 
