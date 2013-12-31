@@ -1,0 +1,42 @@
+{
+  "uuid": "7cb67653-827c-4f06-8c6a-73d17e5b181b",
+  "shortName": "RetroTime",
+  "longName": "RetroTime",
+  "companyName": "jonwgeorge",
+  "versionCode": 3,
+  "versionLabel": "1.0.3",
+  "watchapp": {
+    "watchface": true
+  },
+  "capabilities": [ "configurable" ],
+  "appKeys":{
+    "action":0,
+    "screen":0,
+    "time":0
+  },
+  "resources": {
+    "media": [
+      {
+        "menuIcon": true,
+        "type": "png",
+        "name": "IMAGE_MENU_ICON",
+        "file": "images/menu_icon_game_time.png"
+      },
+      {
+        "type": "font",
+        "name": "FONT_AWESOME_12",
+        "file": "fonts/fontawesome-webfont.ttf"
+      },
+      {
+        "type": "font",
+        "name": "MINECRAFTIA_24",
+        "file": "fonts/minecraftia.ttf"
+      },
+      {
+        "type": "font",
+        "name": "MINECRAFTIA_16",
+        "file": "fonts/minecraftia.ttf"
+      }
+    ]
+  }
+}
