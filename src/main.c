@@ -2,7 +2,8 @@
 #include "pebble.h"
 
 enum {
-  AKEY_TEXT,
+	KEY_INVERT,
+	KEY_HOUR_STYLE
 };
 
 // App-specific data
@@ -72,11 +73,15 @@ void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, voi
 void in_received_handler(DictionaryIterator *received, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "In received called");
   // Check for fields you expect to receive
-  Tuple *text_tuple = dict_find(received, AKEY_TEXT);
+  Tuple *invert_tuple = dict_find(received, KEY_INVERT);
+  Tuple *hour_tuple = dict_find(received, KEY_HOUR_STYLE);
 
   // Act on the found fields received
-  if (text_tuple) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Text: %s", text_tuple->value->cstring);
+  if (invert_tuple) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Invert Screen: %s", invert_tuple->value->cstring);
+  }
+  if (hour_tuple) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "24 Hour Clock: %s", hour_tuple->value->cstring);
   }
 }
 

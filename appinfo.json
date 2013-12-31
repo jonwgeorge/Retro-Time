@@ -9,11 +9,7 @@
     "watchface": true
   },
   "capabilities": [ "configurable" ],
-  "appKeys":{
-    "action":0,
-    "screen":0,
-    "time":0
-  },
+  "appKeys": { "invert": 0, "24hour": 0 },
   "resources": {
     "media": [
       {
