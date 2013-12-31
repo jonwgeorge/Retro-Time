@@ -1,8 +1,0 @@
-argv = ['/Users/jonathan/pebble-dev/PebbleSDK-2.0-BETA4/Pebble/waf', 'configure', 'build']
-environ = {'TERM_SESSION_ID': 'FFBD0B62-21B6-4560-945C-9FD7A785FB61', 'SSH_AUTH_SOCK': '/tmp/launch-K4NsDW/Listeners', 'VERSIONER_PYTHON_PREFER_32_BIT': 'no', 'TERM_PROGRAM_VERSION': '326', 'SHELL': '/bin/bash', 'LOGNAME': 'jonathan', 'USER': 'jonathan', 'HOME': '/Users/jonathan', 'PATH': '/Users/jonathan/pebble-dev/PebbleSDK-2.0-BETA4/arm-cs-tools/bin:/Users/jonathan/pebble-dev/PebbleSDK-2.0-BETA4/bin:/Users/jonathan/pebble-dev/PebbleSDK-2.0-BETA4/bin:/usr/local/bin:/Users/jonathan/pebble-dev/PebbleSDK-2.0-BETA2/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin', 'TMPDIR': '/var/folders/kz/vpvwh97d08ld2m2lzftc773w0000gn/T/', 'TERM_PROGRAM': 'Apple_Terminal', 'LANG': 'en_US.UTF-8', 'TERM': 'xterm-256color', 'Apple_PubSub_Socket_Render': '/tmp/launch-XxkgEJ/Render', 'VERSIONER_PYTHON_VERSION': '2.7', 'SHLVL': '2', 'SECURITYSESSIONID': '186a4', '__CF_USER_TEXT_ENCODING': '0x1F5:0:0', 'PWD': '/Users/jonathan/pebble-dev/retro-time/retro-time', '_': '/Users/jonathan/pebble-dev/PebbleSDK-2.0-BETA4/Pebble/waf', '__CHECKFIX1436934': '1'}
-files = ['/Users/jonathan/pebble-dev/retro-time/retro-time/wscript']
-hash = 4672844372416070989
-options = {'files': '', 'jobs': 8, 'verbose': 0, 'nocache': False, 'progress_bar': 0, 'timestamp': None, 'distcheck_args': None, 'top': '', 'destdir': '', 'keep': 0, 'zones': '', 'debug': False, 'prefix': '/usr/local/', 'download': False, 'force': False, 'targets': '', 'out': ''}
-out_dir = '/Users/jonathan/pebble-dev/retro-time/retro-time/build'
-run_dir = '/Users/jonathan/pebble-dev/retro-time/retro-time'
-top_dir = '/Users/jonathan/pebble-dev/retro-time/retro-time'
