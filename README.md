@@ -10,8 +10,8 @@ Battery life is displayed as 4 iconic hearts, that depleat as the life of your p
 
 Retro time can be downloaded on [MyPebleFaces.com](http://www.mypebblefaces.com/apps/12135/7967/) or via my dropbox mirrors (just in case MPF is down).
 
-####Dropbox Mirrors
-[Retro Time](https://dl.dropboxusercontent.com/u/42779824/pebble/retro-time.pbw) - [Retro Time Inverted](https://dl.dropboxusercontent.com/u/42779824/pebble/retro-time-inverted.pbw)
+####Dropbox Mirror
+[Retro Time](https://dl.dropboxusercontent.com/u/42779824/pebble/retro-time.pbw)
 
 <div id="features"></div>
 
