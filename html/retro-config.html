@@ -49,7 +49,7 @@
         }
         return options;
       }
-
+      
       $().ready(function() {
         $("#b-cancel").click(function() {
           console.log("Cancel");
@@ -60,12 +60,24 @@
           console.log("Submit");
 
           var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(saveOptions()));
+          var invert = $("#invert").val();
+          var hour = $("#24hour").val();
+          window.localStorage.setItem('invert', invert);
+          window.localStorage.setItem('hour', hour);
+          console.log("Invert: " + invert + " 24hour: " + hour);
           console.log("Warping to: " + location);
           console.log(location);
           document.location = location;
         });
-
-      });
+        
+        var invert = window.localStorage.getItem('invert');
+        var hour = window.localStorage.getItem('hour');
+        console.log(invert);
+        console.log(hour);
+        document.getElementById("invert").value=invert;
+		document.getElementById("24hour").value=hour;
+        
+	  });
     </script>
   </body>
 </html>
