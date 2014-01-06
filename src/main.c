@@ -181,6 +181,7 @@ static void do_init(void) {
   const uint32_t outbound_size = 64;
   app_message_open(inbound_size, outbound_size);
   
+  APP_LOG(APP_LOG_LEVEL_INFO, "SETTING THEME");
   set_theme();
 
   layer_add_child(root_layer, text_layer_get_layer(time_layer));

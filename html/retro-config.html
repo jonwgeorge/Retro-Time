@@ -25,8 +25,8 @@
         </div>
         
         <div data-role="fieldcontain">
-          <label for="24hour">24 hour time: <small>* This option is currently under development. *</small></label>
-          <select name="24hour" id="24hour" data-role="slider">
+          <label for="hour">24 hour time: <small>* This option is currently under development. *</small></label>
+          <select name="hour" id="24hour" data-role="slider">
             <option value="off">Off</option>
             <option value="on">On</option>
           </select>
@@ -45,10 +45,24 @@
       function saveOptions() {
         var options = {
           '0': $("#invert").val(),
-          '1': $("#24hour").val()
+          '1': $("#hour").val()
         }
         return options;
       }
+      
+      function GetURLParameter(sParam)
+	  {
+        var sPageURL = window.location.search.substring(1);
+    	var sURLVariables = sPageURL.split('&');
+    	for (var i = 0; i < sURLVariables.length; i++) 
+    	  {
+        	var sParameterName = sURLVariables[i].split('=');
+        	if (sParameterName[0] == sParam) 
+        	{
+              return sParameterName[1];
+        	}
+    	  }
+	  }​
       
       $().ready(function() {
         $("#b-cancel").click(function() {
@@ -60,22 +74,16 @@
           console.log("Submit");
 
           var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(saveOptions()));
-          var invert = $("#invert").val();
-          var hour = $("#24hour").val();
-          window.localStorage.setItem('invert', invert);
-          window.localStorage.setItem('hour', hour);
-          console.log("Invert: " + invert + " 24hour: " + hour);
           console.log("Warping to: " + location);
           console.log(location);
           document.location = location;
         });
         
-        var invert = window.localStorage.getItem('invert');
-        var hour = window.localStorage.getItem('hour');
-        console.log(invert);
-        console.log(hour);
-        document.getElementById("invert").value=invert;
-		document.getElementById("24hour").value=hour;
+        var invert = GetURLParameter('invert');
+        var hour = GetURLParameter('hour');
+        
+        $("#invert").val(invert).slider("refresh");
+        $("#hour").val(hour).slider("refresh");
         
 	  });
     </script>

@@ -9,29 +9,32 @@ Pebble.addEventListener("ready",
 );
 
 Pebble.addEventListener('showConfiguration', function(e) {
-  Pebble.openURL('https://s3-us-west-2.amazonaws.com/s3.jonwgeorge.com/retro-config.html');
+	var options = JSON.parse(window.localStorage.getItem("options"));
+        
+        var url = "https://s3-us-west-2.amazonaws.com/s3.jonwgeorge.com/retro-config.html?" +
+                          "invert=" + encodeURIComponent(options["0"]) +
+                          "&hour=" + encodeURIComponent(options["1"]);
+	
+	console.log("Pushing config webview: " + url);
+	
+	Pebble.openURL(url);
 });
 
 Pebble.addEventListener('webviewclosed', function(e) {
-  if ((typeof(e.response) == 'string') && (e.response.length > 0)) {
-    try {
-      // Pebble.sendAppMessage(JSON.parse(e.response));
-      Pebble.sendAppMessage(JSON.parse(e.response),
-  		function(e) {
-   		 console.log("Successfully delivered message with transactionId="
-     		 + e.data.transactionId);
-  		},
-  		function(e) {
-   		 console.log("Unable to deliver message with transactionId="
-   		   + e.data.transactionId
-   		   + " Error is: " + e.error.message);
-  		}
-	  );
-      localStorage.setItem(setPebbleToken, e.response);
-      console.log("Webview Closed: " + e.response);
-    } catch(e) {
-    }
-  }
+	if(e.response) {
+		var options = JSON.parse(decodeURIComponent(e.response));
+                
+		window.localStorage.setItem("options", JSON.stringify(options));
+                
+		Pebble.sendAppMessage(options,
+			function(e) {
+				console.log("Successfully sent options to Pebble");
+			},
+			function(e) {
+				console.log("Failed to send options to Pebble.\nError: " + e.error.message);
+			}
+		);
+	}
 });
 
 /* function getLocation()
