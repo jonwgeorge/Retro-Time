@@ -3,18 +3,22 @@
 
 enum {
 	KEY_INVERT,
-	KEY_HOUR_STYLE
+	KEY_CHIME,
+	KEY_TEMPERATURE
 };
 
 // App-specific data
 Window *window; // All apps must have at least one window
 TextLayer *time_layer;
 TextLayer *date_layer;
+TextLayer *temp_layer;
 TextLayer *battery_layer;
 TextLayer *charge_layer;
 TextLayer *connection_layer;
 InverterLayer *inverter_layer;
 static char INVERT[4] = "off";
+static char CHIME[4] = "on";
+static char TEMPERATURE[4] = "100";
 
 static void set_theme() {
   if (persist_exists(KEY_INVERT)) {
@@ -58,12 +62,35 @@ static void handle_battery(BatteryChargeState charge_state) {
 static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
   static char time_text[] = "00:00 AM"; // Needs to be static because it's used by the system later.
   static char date_text[] = "Mon, Jan 31"; // Needs to be static because it's used by the system later.
+  char * time_format;
   
-  strftime(time_text, sizeof(time_text), "%I:%M %p", tick_time);
+  if(clock_is_24h_style()) {
+	time_format = "%R";
+  } else {
+	time_format = "%I:%M %p";
+  }
+  
+  strftime(time_text, sizeof(time_text), time_format, tick_time);
   text_layer_set_text(time_layer, time_text);
   
   strftime(date_text, sizeof(date_text), "%a, %b %d", tick_time);
   text_layer_set_text(date_layer, date_text);
+  
+  if (persist_exists(KEY_CHIME)) {
+    persist_read_string(KEY_CHIME, CHIME, 4);
+  }
+  
+  bool check = strcmp(CHIME, "off") == 1 ? true : false;
+  
+  if (tick_time->tm_min == 0 && tick_time->tm_sec == 01 && check == false) {
+  	vibes_double_pulse();
+  }
+  
+  if (persist_exists(KEY_TEMPERATURE)) {
+    persist_read_string(KEY_TEMPERATURE, TEMPERATURE, 4);
+  }
+  
+  text_layer_set_text(temp_layer, TEMPERATURE);
 
   handle_battery(battery_state_service_peek());
 }
@@ -72,7 +99,7 @@ static void handle_bluetooth(bool connected) {
   text_layer_set_text(connection_layer, connected ? "\uf09e" : "\uf071");
   
   if (!connected) {
-    vibes_double_pulse();
+    vibes_long_pulse();
   }
 }
 
@@ -88,6 +115,8 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "In received called");
   // Check for fields you expect to receive
   Tuple *invert_tuple = dict_find(received, KEY_INVERT);
+  Tuple *chime_tuple = dict_find(received, KEY_CHIME);
+  Tuple *temperature_tuple = dict_find(received, KEY_TEMPERATURE);
   
   // Act on the found fields received
   if (invert_tuple) {
@@ -97,6 +126,20 @@ void in_received_handler(DictionaryIterator *received, void *context) {
     strncpy(INVERT, invert_tuple->value->cstring, 4);
                 
     set_theme();
+  }
+  
+  if (chime_tuple) {
+    APP_LOG(APP_LOG_LEVEL_INFO, "SELECTED CHIME: %s", chime_tuple->value->cstring);
+    
+    persist_write_string(KEY_CHIME, chime_tuple->value->cstring);
+    strncpy(CHIME, chime_tuple->value->cstring, 4);
+  }
+  
+  if (temperature_tuple) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "CURRENT TEMPERATURE: %s", temperature_tuple->value->cstring);
+    
+    persist_write_string(KEY_TEMPERATURE, temperature_tuple->value->cstring);
+    strncpy(TEMPERATURE, temperature_tuple->value->cstring, 4);
   }
 }
 
@@ -120,7 +163,7 @@ static void do_init(void) {
   GFont minecraft_font_small = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_MINECRAFTIA_16));
 
   // Init the text layer used to show the time
-  time_layer = text_layer_create(GRect(0, 63, frame.size.w /* width */, 34/* height */));
+  time_layer = text_layer_create(GRect(0, 25, frame.size.w /* width */, 34/* height */));
   text_layer_set_text_color(time_layer, GColorWhite);
   text_layer_set_background_color(time_layer, GColorClear);
   text_layer_set_font(time_layer, minecraft_font);
@@ -128,12 +171,20 @@ static void do_init(void) {
   text_layer_set_text(time_layer, " : ");
   
   // Init the text layer used to show the date
-  date_layer = text_layer_create(GRect(0, 93, frame.size.w /* width */, 34/* height */));
+  date_layer = text_layer_create(GRect(0, 55, frame.size.w /* width */, 34/* height */));
   text_layer_set_text_color(date_layer, GColorWhite);
   text_layer_set_background_color(date_layer, GColorClear);
   text_layer_set_font(date_layer, minecraft_font_small);
   text_layer_set_text_alignment(date_layer, GTextAlignmentCenter);
   text_layer_set_text(date_layer, "Mon, Jan 31");
+  
+  // Init the text layer used to show the temperature
+  temp_layer = text_layer_create(GRect(0, 90, frame.size.w /* width */, 34/* height */));
+  text_layer_set_text_color(temp_layer, GColorWhite);
+  text_layer_set_background_color(temp_layer, GColorClear);
+  text_layer_set_font(temp_layer, minecraft_font_small);
+  text_layer_set_text_alignment(temp_layer, GTextAlignmentCenter);
+  text_layer_set_text(temp_layer, "100");
 
   // Init the text layer used to show bluetooth connection
   connection_layer = text_layer_create(GRect(-2, 2, /* width */ frame.size.w, 34 /* height */));
@@ -186,6 +237,7 @@ static void do_init(void) {
 
   layer_add_child(root_layer, text_layer_get_layer(time_layer));
   layer_add_child(root_layer, text_layer_get_layer(date_layer));
+  layer_add_child(root_layer, text_layer_get_layer(temp_layer));
   layer_add_child(root_layer, text_layer_get_layer(connection_layer));
   layer_add_child(root_layer, text_layer_get_layer(battery_layer));
   layer_add_child(root_layer, text_layer_get_layer(charge_layer));
@@ -197,6 +249,8 @@ static void do_deinit(void) {
   battery_state_service_unsubscribe();
   bluetooth_connection_service_unsubscribe();
   text_layer_destroy(time_layer);
+  text_layer_destroy(date_layer);
+  text_layer_destroy(temp_layer);
   text_layer_destroy(connection_layer);
   text_layer_destroy(battery_layer);
   text_layer_destroy(charge_layer);

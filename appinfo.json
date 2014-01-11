@@ -3,13 +3,16 @@
   "shortName": "RetroTime",
   "longName": "RetroTime",
   "companyName": "jonwgeorge",
-  "versionCode": 3,
-  "versionLabel": "1.0.3",
+  "versionCode": 1,
+  "versionLabel": "1.0.0",
   "watchapp": {
     "watchface": true
   },
   "capabilities": [ "configurable" ],
-  "appKeys": { "invert": 0, "24hour": 0 },
+  "appKeys": { "invert": 0,
+  			   "chime": 1,
+  			   "temperature": 3
+  			 },
   "resources": {
     "media": [
       {

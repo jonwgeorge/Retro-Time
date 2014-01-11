@@ -25,8 +25,8 @@
         </div>
         
         <div data-role="fieldcontain">
-          <label for="hour">24 hour time: <small>* This option is currently under development. *</small></label>
-          <select name="hour" id="24hour" data-role="slider">
+          <label for="chime">Disable hourly chime:</label>
+          <select name="chime" id="chime" data-role="slider">
             <option value="off">Off</option>
             <option value="on">On</option>
           </select>
@@ -45,7 +45,7 @@
       function saveOptions() {
         var options = {
           '0': $("#invert").val(),
-          '1': $("#hour").val()
+          '1': $("#chime").val()
         }
         return options;
       }
@@ -62,7 +62,7 @@
               return sParameterName[1];
         	}
     	  }
-	  }​
+	  }
       
       $().ready(function() {
         $("#b-cancel").click(function() {
@@ -80,10 +80,10 @@
         });
         
         var invert = GetURLParameter('invert');
-        var hour = GetURLParameter('hour');
+        var chime = GetURLParameter('chime');
         
         $("#invert").val(invert).slider("refresh");
-        $("#hour").val(hour).slider("refresh");
+        $("#chime").val(chime).slider("refresh");
         
 	  });
     </script>
