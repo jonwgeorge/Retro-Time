@@ -4,7 +4,9 @@
 enum {
 	KEY_INVERT,
 	KEY_CHIME,
-	KEY_TEMPERATURE
+	KEY_TEMP,
+    KEY_ICON,
+    KEY_DESCRIPTION
 };
 
 // App-specific data
@@ -18,7 +20,9 @@ TextLayer *connection_layer;
 InverterLayer *inverter_layer;
 static char INVERT[4] = "off";
 static char CHIME[4] = "on";
-static char TEMPERATURE[4] = "100";
+static char TEMP[5] = "";
+static char ICON[4] = "";
+static char DESCRIPTION[20] = "";
 
 static void set_theme() {
   if (persist_exists(KEY_INVERT)) {
@@ -80,17 +84,17 @@ static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
     persist_read_string(KEY_CHIME, CHIME, 4);
   }
   
-  bool check = strcmp(CHIME, "off") == 1 ? true : false;
+  bool check = strcmp(CHIME, "off") == 0 ? true : false;
   
   if (tick_time->tm_min == 0 && tick_time->tm_sec == 01 && check == false) {
   	vibes_double_pulse();
   }
   
-  if (persist_exists(KEY_TEMPERATURE)) {
-    persist_read_string(KEY_TEMPERATURE, TEMPERATURE, 4);
+  if (persist_exists(KEY_TEMP)) {
+    persist_read_string(KEY_TEMP, TEMP, 4);
   }
-  
-  text_layer_set_text(temp_layer, TEMPERATURE);
+      
+  text_layer_set_text(temp_layer, TEMP);
 
   handle_battery(battery_state_service_peek());
 }
@@ -112,34 +116,45 @@ void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, voi
 }
 
 void in_received_handler(DictionaryIterator *received, void *context) {
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "In received called");
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Settings received...");
   // Check for fields you expect to receive
   Tuple *invert_tuple = dict_find(received, KEY_INVERT);
   Tuple *chime_tuple = dict_find(received, KEY_CHIME);
-  Tuple *temperature_tuple = dict_find(received, KEY_TEMPERATURE);
+  Tuple *temp_tuple = dict_find(received, KEY_TEMP);
+  Tuple *icon_tuple = dict_find(received, KEY_ICON);
+  Tuple *description_tuple = dict_find(received, KEY_DESCRIPTION);
   
   // Act on the found fields received
   if (invert_tuple) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "SELECTED INVERT: %s", invert_tuple->value->cstring);
-
     persist_write_string(KEY_INVERT, invert_tuple->value->cstring);
     strncpy(INVERT, invert_tuple->value->cstring, 4);
                 
     set_theme();
   }
   
-  if (chime_tuple) {
-    APP_LOG(APP_LOG_LEVEL_INFO, "SELECTED CHIME: %s", chime_tuple->value->cstring);
-    
+  if (chime_tuple) {    
     persist_write_string(KEY_CHIME, chime_tuple->value->cstring);
     strncpy(CHIME, chime_tuple->value->cstring, 4);
   }
   
-  if (temperature_tuple) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "CURRENT TEMPERATURE: %s", temperature_tuple->value->cstring);
+  if (temp_tuple) {    
+    persist_write_string(KEY_TEMP, temp_tuple->value->cstring);
+    strncpy(TEMP, temp_tuple->value->cstring, 5);
     
-    persist_write_string(KEY_TEMPERATURE, temperature_tuple->value->cstring);
-    strncpy(TEMPERATURE, temperature_tuple->value->cstring, 4);
+    if (persist_exists(KEY_TEMP)) {
+      persist_read_string(KEY_TEMP, TEMP, 5);
+      text_layer_set_text(temp_layer, TEMP);
+  	}
+  }
+    
+  if (icon_tuple) {    
+    persist_write_string(KEY_ICON, icon_tuple->value->cstring);
+    strncpy(ICON, icon_tuple->value->cstring, 4);
+  }
+    
+  if (description_tuple) {    
+    persist_write_string(KEY_DESCRIPTION, description_tuple->value->cstring);
+    strncpy(DESCRIPTION, description_tuple->value->cstring, 4);
   }
 }
 
@@ -184,7 +199,7 @@ static void do_init(void) {
   text_layer_set_background_color(temp_layer, GColorClear);
   text_layer_set_font(temp_layer, minecraft_font_small);
   text_layer_set_text_alignment(temp_layer, GTextAlignmentCenter);
-  text_layer_set_text(temp_layer, "100");
+  text_layer_set_text(temp_layer, "      ");
 
   // Init the text layer used to show bluetooth connection
   connection_layer = text_layer_create(GRect(-2, 2, /* width */ frame.size.w, 34 /* height */));

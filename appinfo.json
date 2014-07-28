@@ -9,9 +9,13 @@
     "watchface": true
   },
   "capabilities": [ "configurable" ],
-  "appKeys": { "invert": 0,
-  			   "chime": 1,
-  			   "temperature": 3
+  "appKeys": { "KEY_INVERT": 0,
+  			   "KEY_CHIME": 1,
+  			   "KEY_TEMP": 2,
+               "KEY_ICON": 3,
+               "KEY_DESCRIPTION": 4,
+               "KEY_INTERVAL": 5,
+               "KEY_UNITS": 6
   			 },
   "resources": {
     "media": [
