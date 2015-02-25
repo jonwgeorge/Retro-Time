@@ -1,20 +1,25 @@
-var invert = window.localStorage.getItem('invert') ? window.localStorage.getItem('invert') : 'off';
-var chime = window.localStorage.getItem('chime') ? window.localStorage.getItem('chime') : 'off';
-var units = window.localStorage.getItem('units') ? window.localStorage.getItem('units') : 'f';
-var interval = window.localStorage.getItem('interval') ? window.localStorage.getItem('interval') : 900000;
+var invert = localStorage.getItem('invert') ? localStorage.getItem('invert') : 1;
+var bluetooth = localStorage.getItem('bluetooth') ? localStorage.getItem('bluetooth') : 1;
+var chime = localStorage.getItem('chime') ? localStorage.getItem('chime') : 1;
+var units = localStorage.getItem('units') ? localStorage.getItem('units') : 1;
+var interval = localStorage.getItem('interval') ? localStorage.getItem('interval') : 900000;
+
+console.log(invert + ", " + bluetooth + ", " + chime + ", " + units + ", " + interval);
 
 Pebble.addEventListener("ready", function(e) {
-    console.log("ready and up.");
-    setInterval(function(){
-        console.log("fetching weather for automatic location...");
-        getLocation();
-    },interval);
+    console.log("Retro Time is running!");
     getLocation();
 });
 
 Pebble.addEventListener('showConfiguration', function(e) {
-    var url = "https://s3-us-west-2.amazonaws.com/s3.jonwgeorge.com/retro-dev.html?invert=" + invert + "&chime=" + chime + "&units=" + units + "&interval=" + interval;
-	console.log("Pushing config webview...");
+  var invert = localStorage.getItem('invert') ? localStorage.getItem('invert') : 1;
+  var bluetooth = localStorage.getItem('bluetooth') ? localStorage.getItem('bluetooth') : 1;
+  var chime = localStorage.getItem('chime') ? localStorage.getItem('chime') : 1;
+  var units = localStorage.getItem('units') ? localStorage.getItem('units') : 1;
+  var interval = localStorage.getItem('interval') ? localStorage.getItem('interval') : 900000;
+  
+  var url = "https://s3-us-west-2.amazonaws.com/s3.jonwgeorge.com/retro-dev.html?invert=" + invert + "&bluetooth=" + bluetooth + "&chime=" + chime + "&units=" + units + "&interval=" + interval;
+	console.log("Pushing config webview..." + url);
 	Pebble.openURL(url);
 });
 
@@ -23,24 +28,28 @@ Pebble.addEventListener("webviewclosed", function(e) {
     var configuration = JSON.parse(decodeURIComponent(e.response));
     console.log("Configuration window returned: " + JSON.stringify(configuration));
     
-    window.localStorage.setItem('invert', configuration.invert);
-    window.localStorage.setItem('chime', configuration.chime);
-    window.localStorage.setItem('units', configuration.units);
-    window.localStorage.setItem('interval', configuration.interval);
+    localStorage.setItem('invert', configuration.invert);
+    localStorage.setItem('bluetooth', configuration.bluetooth);
+    localStorage.setItem('chime', configuration.chime);
+    localStorage.setItem('units', configuration.units);
+    localStorage.setItem('interval', configuration.interval);
  
     //Send to Pebble, persist there
     Pebble.sendAppMessage(
-      {"KEY_INVERT": configuration.invert},
-      {"KEY_CHIME":  configuration.chime},
-      {"KEY_UNITS": configuration.units},
-      {"KEY_INTERVAL": configuration.interval},
-      function(e) {
-        console.log("settings delivered.");
+      {
+        'STYLE_KEY': parseInt(configuration.invert),
+        'BLUETOOTHVIBE_KEY': parseInt(configuration.bluetooth),
+        'HOURLYVIBE_KEY': parseInt(configuration.chime),
+        'WEATHER_UNITS': parseInt(configuration.units),
+        'WEATHER_REFRESH_INTERVAL_KEY': parseInt(configuration.interval)
       },
       function(e) {
-        console.log("settings failed to deliver.");
+        console.log('Successfully delivered settings with transactionId=' + e.data.transactionId);
+      },
+      function(e) {
+        console.log('Unable to deliver settings with transactionId=' + e.data.transactionId + ' Error is: ' + e.error.message);
       }
-    )
+    );
 });
 
 Pebble.addEventListener('getWeather', function(e) {
@@ -60,8 +69,8 @@ function getLocation()
 
 function getWeather(position)
 {
-  var url = "http://api.openweathermap.org/data/2.5/weather?lat=" 
-  	+ position.coords.latitude + "&lon=" + position.coords.longitude;
+  var url = "http://api.openweathermap.org/data/2.5/weather?lat=" + position.coords.latitude + "&lon=" + position.coords.longitude;
+  console.log(url);
   var req = new XMLHttpRequest();
     req.open('GET', url, true);
     req.onload = function(e) {
@@ -71,38 +80,40 @@ function getWeather(position)
             // console.log("Response: " + response);
           var kelvin = response.main.temp;
             // console.log("Kelvin: " + kelvin);
-          if (units == 'f') {    
-            var temperature = Math.floor(1.8 * (kelvin - 273) + 32);
-            temperature = temperature.toString();
-            temperature = temperature + "F";
-          } else if (units == 'c') {
-            var temperature = Math.floor(kelvin - 273);
-            temperature = temperature.toString();
-            temperature = temperature + "C";
-          } else if (units == 'k') {
-            var temperature = Math.floor(kelvin);
-            temperature = temperature.toString();
-            temperature = temperature + "K";
+          
+          var temperature;
+          switch(units) {
+            case 1:
+              temperature = Math.floor(1.8 * (kelvin - 273) + 32);
+              break;
+            case 2:
+              temperature = Math.floor(kelvin - 273);
+              break;
+            case 3:
+              temperature = Math.floor(kelvin);
+              break;
+            default:
+              temperature = Math.floor(1.8 * (kelvin - 273) + 32);
           }
-            // console.log("Temperature: " + temperature);
-          var icon = response.weather[0].icon.toString();
-            // console.log("Icon: " + icon);
-          var description = response.weather[0].description.toString();
-            // console.log("Description: " + description);
+          
+          var description = response.weather[0].main.toString();
+          
+          console.log("Temperature: " + temperature + ", Description: " + description);
+          
           Pebble.sendAppMessage(
-              {"KEY_TEMP": temperature},
-              {"KEY_ICON": icon},
-              {"KEY_DESCRIPTION": description},
-              function(e) {
-                console.log("Got weather from openweather.");
-                console.log("temp = " + temperature + " description = " + description + " icon = " + icon);
-              },
-              function(e) {
-                console.log("Weather failed!");
-              }
-            )
-      } else { console.log("Error"); }
+            {
+              'WEATHER_TEMPERATURE_KEY': parseInt(temperature),
+              'WEATHER_DESCRIPTION_KEY': description
+            },
+            function(e) {
+              console.log('Successfully delivered weather with transactionId=' + e.data.transactionId);
+            },
+            function(e) {
+              console.log('Unable to deliver weather with transactionId=' + e.data.transactionId + ' Error is: ' + e.error.message);
+            }
+          );
+      } else { console.log("No response from openweather..."); }
     }
-  }
+  };
   req.send(null);
 }

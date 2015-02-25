@@ -1,41 +1,65 @@
 // Standard includes
 #include "pebble.h"
+  
+static int mConfigStyle = 1;               //0=WhiteOnBlack, 1=BlackOnWhite
+static int mConfigBluetoothVibe = 1;       //0=off 1=on
+static int mConfigHourlyVibe = 1;          //0=off 1=on
+static int mConfigWeatherUnit = 1;         //1=Fahrenheit, 2=Celcius, 3=Kelvin
+ 
+static char mTemperatureDegrees = 000;  //-999 to 999
+static char mWeatherDescription[20] = "";      //cloudy,sunny,rain,snow,etc.
+static int mRefreshInterval = 900000;        //Time in milliseconds to refresh weather
 
 enum {
-	KEY_INVERT,
-	KEY_CHIME,
-	KEY_TEMP,
-    KEY_ICON,
-    KEY_DESCRIPTION
+  STYLE_KEY,
+  BLUETOOTHVIBE_KEY,
+  HOURLYVIBE_KEY,
+  WEATHER_UNITS,
+  WEATHER_TEMPERATURE_KEY,
+  WEATHER_DESCRIPTION_KEY,
+  REFRESH_INTERVAL_KEY
 };
 
 // App-specific data
 Window *window; // All apps must have at least one window
-TextLayer *time_layer;
-TextLayer *date_layer;
-TextLayer *temp_layer;
-TextLayer *battery_layer;
-TextLayer *charge_layer;
-TextLayer *connection_layer;
+TextLayer *time_layer, *date_layer, *temp_layer, *battery_layer, *charge_layer, *connection_layer;
 InverterLayer *inverter_layer;
-static char INVERT[4] = "off";
-static char CHIME[4] = "on";
-static char TEMP[5] = "";
-static char ICON[4] = "";
-static char DESCRIPTION[20] = "";
 
+// Function to set theme invert layer on or off
 static void set_theme() {
-  if (persist_exists(KEY_INVERT)) {
-    persist_read_string(KEY_INVERT, INVERT, 4);
+  if (mConfigStyle == 1) {
+    layer_set_hidden(inverter_layer_get_layer(inverter_layer), true);
   }
-
-  APP_LOG(APP_LOG_LEVEL_INFO, "SETTING INVERT: %s", INVERT);
-        
-  bool hide = strcmp(INVERT, "off") == 0 ? true : false;
-                
-  layer_set_hidden(inverter_layer_get_layer(inverter_layer), hide);
 }
 
+/*static void update_weather() {
+  static char strTemp[8];
+  strTemp = mTemperatureDegrees;
+  
+  switch( mConfigWeatherUnit ) 
+  {
+      case 1:
+        strcpy (strTemp, mTemperatureDegrees);
+        strcat (strTemp, "\u00B0");
+        strcat (strTemp, "F");
+      case 2:
+        strcpy (strTemp, mTemperatureDegrees);
+        strcat (strTemp, "\u00B0");
+        strcat (strTemp, "C");
+      case 3:
+        strcpy (strTemp, mTemperatureDegrees);
+        strcat (strTemp, "\u00B0");
+        strcat (strTemp, "K");
+      default :
+        strcpy (strTemp, mTemperatureDegrees);
+        strcat (strTemp, "\u00B0");
+        strcat (strTemp, "F");
+  }
+  
+  text_layer_set_text(temp_layer, strTemp);
+}*/
+
+// Function to handle battery level and charge status
 static void handle_battery(BatteryChargeState charge_state) {
   static char battery_text[] = "\uf004 \uf004 \uf004 \uf004 \uf0e7";
   static char charge_text[] = "   ";
@@ -80,35 +104,24 @@ static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
   strftime(date_text, sizeof(date_text), "%a, %b %d", tick_time);
   text_layer_set_text(date_layer, date_text);
   
-  if (persist_exists(KEY_CHIME)) {
-    persist_read_string(KEY_CHIME, CHIME, 4);
-  }
-  
-  bool check = strcmp(CHIME, "off") == 0 ? true : false;
-  
-  if (tick_time->tm_min == 0 && tick_time->tm_sec == 01 && check == false) {
+  if (tick_time->tm_min == 0 && tick_time->tm_sec == 01 && mConfigHourlyVibe == 1) {
   	vibes_double_pulse();
   }
-  
-  if (persist_exists(KEY_TEMP)) {
-    persist_read_string(KEY_TEMP, TEMP, 4);
-  }
-      
-  text_layer_set_text(temp_layer, TEMP);
 
   handle_battery(battery_state_service_peek());
+  //update_weather();
 }
 
 static void handle_bluetooth(bool connected) {
   text_layer_set_text(connection_layer, connected ? "\uf09e" : "\uf071");
   
-  if (!connected) {
+  if (!connected && mConfigBluetoothVibe == 1) {
     vibes_long_pulse();
   }
 }
 
 void out_sent_handler(DictionaryIterator *sent, void *context) {
-   // outgoing message was delivered
+  
 }
 
 void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
@@ -118,44 +131,66 @@ void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, voi
 void in_received_handler(DictionaryIterator *received, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Settings received...");
   // Check for fields you expect to receive
-  Tuple *invert_tuple = dict_find(received, KEY_INVERT);
-  Tuple *chime_tuple = dict_find(received, KEY_CHIME);
-  Tuple *temp_tuple = dict_find(received, KEY_TEMP);
-  Tuple *icon_tuple = dict_find(received, KEY_ICON);
-  Tuple *description_tuple = dict_find(received, KEY_DESCRIPTION);
+  Tuple *invert_tuple = dict_find(received, STYLE_KEY);
+  Tuple *bluetooth_tuple = dict_find(received, BLUETOOTHVIBE_KEY);
+  Tuple *chime_tuple = dict_find(received, HOURLYVIBE_KEY);
+  Tuple *temp_tuple = dict_find(received, WEATHER_TEMPERATURE_KEY);
+  Tuple *units_tuple = dict_find(received, WEATHER_UNITS);
+  Tuple *description_tuple = dict_find(received, WEATHER_DESCRIPTION_KEY);
+  Tuple *interval_tuple = dict_find(received, REFRESH_INTERVAL_KEY);
   
   // Act on the found fields received
   if (invert_tuple) {
-    persist_write_string(KEY_INVERT, invert_tuple->value->cstring);
-    strncpy(INVERT, invert_tuple->value->cstring, 4);
-                
-    set_theme();
+    persist_write_int(STYLE_KEY, invert_tuple->value->int32);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Invert received...");
+  }
+  
+  if (bluetooth_tuple) {
+    persist_write_int(BLUETOOTHVIBE_KEY, bluetooth_tuple->value->int32);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Bluetooth received...");
   }
   
   if (chime_tuple) {    
-    persist_write_string(KEY_CHIME, chime_tuple->value->cstring);
-    strncpy(CHIME, chime_tuple->value->cstring, 4);
+    persist_write_int(HOURLYVIBE_KEY, chime_tuple->value->int32);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Chime received...");
   }
   
   if (temp_tuple) {    
-    persist_write_string(KEY_TEMP, temp_tuple->value->cstring);
-    strncpy(TEMP, temp_tuple->value->cstring, 5);
-    
-    if (persist_exists(KEY_TEMP)) {
-      persist_read_string(KEY_TEMP, TEMP, 5);
-      text_layer_set_text(temp_layer, TEMP);
-  	}
+    persist_write_int(WEATHER_TEMPERATURE_KEY, temp_tuple->value->int32);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Temp received...");
   }
-    
-  if (icon_tuple) {    
-    persist_write_string(KEY_ICON, icon_tuple->value->cstring);
-    strncpy(ICON, icon_tuple->value->cstring, 4);
+  
+  if (units_tuple) {
+    persist_write_int(WEATHER_UNITS, units_tuple->value->int32);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Units received...");
   }
     
   if (description_tuple) {    
-    persist_write_string(KEY_DESCRIPTION, description_tuple->value->cstring);
-    strncpy(DESCRIPTION, description_tuple->value->cstring, 4);
+    persist_write_string(WEATHER_DESCRIPTION_KEY, description_tuple->value->cstring);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Description received...");
   }
+  
+  if (interval_tuple) {
+    persist_write_int(REFRESH_INTERVAL_KEY, interval_tuple->value->int32);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Interval received...");
+  }
+  
+  // Update static variables and reset theme if needed
+  mConfigStyle = persist_read_int(STYLE_KEY);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "ConfigStyle: %d", mConfigStyle);
+  mConfigBluetoothVibe = persist_read_int(BLUETOOTHVIBE_KEY);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "ConfigBluetoothVibe: %d", mConfigBluetoothVibe);
+  mConfigHourlyVibe = persist_read_int(HOURLYVIBE_KEY);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "ConfigHourlyVibe: %d", mConfigHourlyVibe);
+  mTemperatureDegrees = persist_read_int(WEATHER_TEMPERATURE_KEY);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Temperature: %d", mTemperatureDegrees);
+  mConfigWeatherUnit = persist_read_int(WEATHER_UNITS);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "ConfigWeatherUnit: %d", mConfigWeatherUnit);
+  persist_read_string(WEATHER_DESCRIPTION_KEY, mWeatherDescription, 20);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "Description: %s", mWeatherDescription);
+  mRefreshInterval = persist_read_int(WEATHER_DESCRIPTION_KEY);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "ConfigRefreshInterval: %d", mRefreshInterval);
+  
 }
 
 void in_dropped_handler(AppMessageResult reason, void *context) {
@@ -178,7 +213,7 @@ static void do_init(void) {
   GFont minecraft_font_small = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_MINECRAFTIA_16));
 
   // Init the text layer used to show the time
-  time_layer = text_layer_create(GRect(0, 25, frame.size.w /* width */, 34/* height */));
+  time_layer = text_layer_create(GRect(0, 115, frame.size.w /* width */, 34/* height */));
   text_layer_set_text_color(time_layer, GColorWhite);
   text_layer_set_background_color(time_layer, GColorClear);
   text_layer_set_font(time_layer, minecraft_font);
@@ -186,7 +221,7 @@ static void do_init(void) {
   text_layer_set_text(time_layer, " : ");
   
   // Init the text layer used to show the date
-  date_layer = text_layer_create(GRect(0, 55, frame.size.w /* width */, 34/* height */));
+  date_layer = text_layer_create(GRect(0, 145, frame.size.w /* width */, 34/* height */));
   text_layer_set_text_color(date_layer, GColorWhite);
   text_layer_set_background_color(date_layer, GColorClear);
   text_layer_set_font(date_layer, minecraft_font_small);
@@ -199,7 +234,7 @@ static void do_init(void) {
   text_layer_set_background_color(temp_layer, GColorClear);
   text_layer_set_font(temp_layer, minecraft_font_small);
   text_layer_set_text_alignment(temp_layer, GTextAlignmentCenter);
-  text_layer_set_text(temp_layer, "      ");
+  text_layer_set_text(temp_layer, "999°F");
 
   // Init the text layer used to show bluetooth connection
   connection_layer = text_layer_create(GRect(-2, 2, /* width */ frame.size.w, 34 /* height */));
