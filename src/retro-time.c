@@ -6,7 +6,7 @@ static int mConfigBluetoothVibe = 1;       //0=off 1=on
 static int mConfigHourlyVibe = 1;          //0=off 1=on
 static int mConfigWeatherUnit = 1;         //1=Fahrenheit, 2=Celcius, 3=Kelvin
  
-static char mTemperatureDegrees = 000;  //-999 to 999
+static int mTemperatureDegrees = 000;  //-999 to 999
 static char mWeatherDescription[20] = "";      //cloudy,sunny,rain,snow,etc.
 static int mRefreshInterval = 900000;        //Time in milliseconds to refresh weather
 
@@ -141,27 +141,27 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   
   // Act on the found fields received
   if (invert_tuple) {
-    persist_write_int(STYLE_KEY, invert_tuple->value->int32);
+    persist_write_int(STYLE_KEY, invert_tuple->value->uint8);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Invert received...");
   }
   
   if (bluetooth_tuple) {
-    persist_write_int(BLUETOOTHVIBE_KEY, bluetooth_tuple->value->int32);
+    persist_write_int(BLUETOOTHVIBE_KEY, bluetooth_tuple->value->uint8);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Bluetooth received...");
   }
   
   if (chime_tuple) {    
-    persist_write_int(HOURLYVIBE_KEY, chime_tuple->value->int32);
+    persist_write_int(HOURLYVIBE_KEY, chime_tuple->value->uint8);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Chime received...");
   }
   
   if (temp_tuple) {    
-    persist_write_int(WEATHER_TEMPERATURE_KEY, temp_tuple->value->int32);
+    persist_write_int(WEATHER_TEMPERATURE_KEY, temp_tuple->value->uint8);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Temp received...");
   }
   
   if (units_tuple) {
-    persist_write_int(WEATHER_UNITS, units_tuple->value->int32);
+    persist_write_int(WEATHER_UNITS, units_tuple->value->uint8);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Units received...");
   }
     
@@ -171,7 +171,7 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   }
   
   if (interval_tuple) {
-    persist_write_int(REFRESH_INTERVAL_KEY, interval_tuple->value->int32);
+    persist_write_int(REFRESH_INTERVAL_KEY, interval_tuple->value->uint8);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Interval received...");
   }
   

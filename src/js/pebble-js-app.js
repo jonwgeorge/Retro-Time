@@ -53,14 +53,14 @@ Pebble.addEventListener("webviewclosed", function(e) {
 });
 
 Pebble.addEventListener('getWeather', function(e) {
-  console.log("fetching weather for automatic location...");
+  console.log("Fetching weather for automatic location...");
   getLocation();
 });
 
 function getLocation()
 {
   if (navigator.geolocation) {
-      console.log("location success!");
+      console.log("Location success!");
       navigator.geolocation.getCurrentPosition(getWeather);
   } else {
     console.log("Can't get location.");
@@ -82,6 +82,7 @@ function getWeather(position)
             // console.log("Kelvin: " + kelvin);
           
           var temperature;
+          var units = localStorage.getItem('units');
           switch(units) {
             case 1:
               temperature = Math.floor(1.8 * (kelvin - 273) + 32);
