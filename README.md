@@ -7,7 +7,8 @@ Retro Time is a watchface designed for the Pebble smart-watch. It takes design i
 Battery life is displayed as 4 iconic hearts, that depleat as the life of your pebble depleats. Retro Time keeps track of your bluetooth connection status and will give you a gentle reminder if you leave your phone behind.
 
 Retro time can be downloaded on the Pebble App Store:
-[![Retro Time](http://pblweb.com/badge/52a14584a3850902a8000016/orange/medium/)](https://apps.getpebble.com/applications/52a14584a3850902a8000016)
+
+[![Retro Time](http://pblweb.com/badge/52a14584a3850902a8000016/orange/small/)](https://apps.getpebble.com/applications/52a14584a3850902a8000016)
 
 <div id="features"></div>
 
