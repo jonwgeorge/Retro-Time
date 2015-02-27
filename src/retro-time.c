@@ -1,5 +1,8 @@
 // Standard includes
 #include "pebble.h"
+#ifdef PBL_COLOR
+  #include "gcolor_definitions.h"
+#endif
   
 static int mConfigStyle = 1;               //0=WhiteOnBlack, 1=BlackOnWhite
 static int mConfigBluetoothVibe = 1;       //0=off 1=on
@@ -7,6 +10,8 @@ static int mConfigHourlyVibe = 1;          //0=off 1=on
 static int mConfigWeatherUnit = 1;         //1=Fahrenheit, 2=Celcius, 3=Kelvin
  
 static int mTemperatureDegrees = 000;  //-999 to 999
+static int currentTemp;
+static char temperatureString[1024];
 static char mWeatherDescription[20] = "";      //cloudy,sunny,rain,snow,etc.
 static int mRefreshInterval = 900000;        //Time in milliseconds to refresh weather
 
@@ -32,32 +37,28 @@ static void set_theme() {
   }
 }
 
-/*static void update_weather() {
-  static char strTemp[8];
-  strTemp = mTemperatureDegrees;
-  
-  switch( mConfigWeatherUnit ) 
-  {
+static void update_weather() {
+  if (mTemperatureDegrees != currentTemp) {
+    currentTemp = mTemperatureDegrees;
+    switch( mConfigWeatherUnit ) 
+    {
       case 1:
-        strcpy (strTemp, mTemperatureDegrees);
-        strcat (strTemp, "\u00B0");
-        strcat (strTemp, "F");
+        snprintf(temperatureString, 1024, "%d\u00B0F", mTemperatureDegrees);
+        text_layer_set_text(temp_layer, temperatureString);
       case 2:
-        strcpy (strTemp, mTemperatureDegrees);
-        strcat (strTemp, "\u00B0");
-        strcat (strTemp, "C");
+        snprintf(temperatureString, 1204, "%d\u00B0C", mTemperatureDegrees);
+        text_layer_set_text(temp_layer, temperatureString);
       case 3:
-        strcpy (strTemp, mTemperatureDegrees);
-        strcat (strTemp, "\u00B0");
-        strcat (strTemp, "K");
+        snprintf(temperatureString, 1204, "%d\u00B0K", mTemperatureDegrees);
+        text_layer_set_text(temp_layer, temperatureString);
       default :
-        strcpy (strTemp, mTemperatureDegrees);
-        strcat (strTemp, "\u00B0");
-        strcat (strTemp, "F");
+        snprintf(temperatureString, 1204, "%d\u00B0F", mTemperatureDegrees);
+        text_layer_set_text(temp_layer, temperatureString);
+    }
   }
   
-  text_layer_set_text(temp_layer, strTemp);
-}*/
+  //text_layer_set_text(temp_layer, mTemperatureDegrees);
+}
 
 // Function to handle battery level and charge status
 static void handle_battery(BatteryChargeState charge_state) {
@@ -109,7 +110,7 @@ static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
   }
 
   handle_battery(battery_state_service_peek());
-  //update_weather();
+  update_weather();
 }
 
 static void handle_bluetooth(bool connected) {
@@ -141,27 +142,27 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   
   // Act on the found fields received
   if (invert_tuple) {
-    persist_write_int(STYLE_KEY, invert_tuple->value->uint8);
+    persist_write_int(STYLE_KEY, invert_tuple->value->uint16);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Invert received...");
   }
   
   if (bluetooth_tuple) {
-    persist_write_int(BLUETOOTHVIBE_KEY, bluetooth_tuple->value->uint8);
+    persist_write_int(BLUETOOTHVIBE_KEY, bluetooth_tuple->value->uint16);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Bluetooth received...");
   }
   
   if (chime_tuple) {    
-    persist_write_int(HOURLYVIBE_KEY, chime_tuple->value->uint8);
+    persist_write_int(HOURLYVIBE_KEY, chime_tuple->value->uint16);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Chime received...");
   }
   
   if (temp_tuple) {    
-    persist_write_int(WEATHER_TEMPERATURE_KEY, temp_tuple->value->uint8);
+    persist_write_int(WEATHER_TEMPERATURE_KEY, temp_tuple->value->uint32);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Temp received...");
   }
   
   if (units_tuple) {
-    persist_write_int(WEATHER_UNITS, units_tuple->value->uint8);
+    persist_write_int(WEATHER_UNITS, units_tuple->value->uint16);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Units received...");
   }
     
@@ -171,7 +172,7 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   }
   
   if (interval_tuple) {
-    persist_write_int(REFRESH_INTERVAL_KEY, interval_tuple->value->uint8);
+    persist_write_int(REFRESH_INTERVAL_KEY, interval_tuple->value->uint16);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Interval received...");
   }
   
@@ -246,7 +247,11 @@ static void do_init(void) {
 
   // Init the text layer used to show the battery percentage
   battery_layer = text_layer_create(GRect(2, 2, /* width */ frame.size.w, 34 /* height */));
-  text_layer_set_text_color(battery_layer, GColorWhite);
+  #ifdef PBL_COLOR
+    text_layer_set_text_color(battery_layer, GColorRed);
+  #else
+    text_layer_set_text_color(battery_layer, GColorWhite);
+  #endif
   text_layer_set_background_color(battery_layer, GColorClear);
   text_layer_set_font(battery_layer, awesome_font);
   text_layer_set_text_alignment(battery_layer, GTextAlignmentLeft);

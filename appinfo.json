@@ -1,53 +1,58 @@
 {
-    "appKeys": {
-        "BLUETOOTHVIBE_KEY": 2,
-        "HOURLYVIBE_KEY": 3,
-        "STYLE_KEY": 1,
-        "WEATHER_DESCRIPTION_KEY": 6,
-        "WEATHER_REFRESH_INTERVAL_KEY": 7,
-        "WEATHER_TEMPERATURE_KEY": 4,
-        "WEATHER_UNITS_KEY": 5
-    },
-    "capabilities": [
-        "location",
-        "configurable"
-    ],
-    "companyName": "jonwgeorge",
-    "longName": "RetroTime",
-    "projectType": "native",
-    "resources": {
-        "media": [
-            {
-                "compatibility": "2.7",
-                "file": "fonts/minecraftia.ttf",
-                "name": "MINECRAFTIA_16",
-                "type": "font"
-            },
-            {
-                "compatibility": "2.7",
-                "file": "fonts/minecraftia.ttf",
-                "name": "MINECRAFTIA_24",
-                "type": "font"
-            },
-            {
-                "compatibility": "2.7",
-                "file": "fonts/fontawesome-webfont.ttf",
-                "name": "FONT_AWESOME_12",
-                "type": "font"
-            },
-            {
-                "file": "images/menu_icon_game_time.png",
-                "menuIcon": true,
-                "name": "IMAGE_MENU_ICON",
-                "type": "png"
-            }
-        ]
-    },
-    "shortName": "RetroTime",
-    "uuid": "7cb67653-827c-4f06-8c6a-73d17e5b181b",
-    "versionCode": 1,
-    "versionLabel": "2.0",
-    "watchapp": {
-        "watchface": true
-    }
+  "appKeys": {
+    "BLUETOOTHVIBE_KEY": 2,
+    "HOURLYVIBE_KEY": 3,
+    "STYLE_KEY": 1,
+    "WEATHER_DESCRIPTION_KEY": 6,
+    "WEATHER_REFRESH_INTERVAL_KEY": 7,
+    "WEATHER_TEMPERATURE_KEY": 4,
+    "WEATHER_UNITS_KEY": 5
+  },
+  "capabilities": [
+    "location",
+    "configurable"
+  ],
+  "companyName": "jonwgeorge",
+  "longName": "RetroTime",
+  "projectType": "native",
+  "resources": {
+    "media": [
+      {
+        "compatibility": "2.7",
+        "file": "fonts/minecraftia.ttf",
+        "name": "MINECRAFTIA_16",
+        "type": "font"
+      },
+      {
+        "compatibility": "2.7",
+        "file": "fonts/minecraftia.ttf",
+        "name": "MINECRAFTIA_24",
+        "type": "font"
+      },
+      {
+        "compatibility": "2.7",
+        "file": "fonts/fontawesome-webfont.ttf",
+        "name": "FONT_AWESOME_12",
+        "type": "font"
+      },
+      {
+        "file": "images/menu_icon_game_time.png",
+        "menuIcon": true,
+        "name": "IMAGE_MENU_ICON",
+        "type": "png"
+      }
+    ]
+  },
+  "shortName": "RetroTime",
+  "uuid": "7cb67653-827c-4f06-8c6a-73d17e5b181b",
+  "versionCode": 1,
+  "versionLabel": "2.0",
+  "watchapp": {
+    "watchface": true
+  },
+  "targetPlatforms": [
+    "aplite",
+    "basalt"
+  ],
+  "sdkVersion": "3"
 }

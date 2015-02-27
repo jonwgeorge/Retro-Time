@@ -44,7 +44,7 @@ Pebble.addEventListener("webviewclosed", function(e) {
         'WEATHER_REFRESH_INTERVAL_KEY': parseInt(configuration.interval)
       },
       function(e) {
-        console.log('Successfully delivered settings with transactionId=' + e.data.transactionId);
+        console.log('Successfully delivered settings with transactionId=' + e.data.transactionId + 'Transaction=' + e.data);
       },
       function(e) {
         console.log('Unable to deliver settings with transactionId=' + e.data.transactionId + ' Error is: ' + e.error.message);
