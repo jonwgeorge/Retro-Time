@@ -1,9 +1,9 @@
 // Standard includes
-#include "pebble.h"
+#include <pebble.h>
 
 enum {
-	KEY_INVERT,
-	KEY_HOUR_STYLE
+  AKEY_NUMBER,
+  AKEY_TEXT,
 };
 
 // App-specific data
@@ -42,12 +42,13 @@ static void handle_battery(BatteryChargeState charge_state) {
 
 // Called once per second
 static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
-  static char time_text[] = "00:00 AM"; // Needs to be static because it's used by the system later.
+  static char time_text[] = "00:00"; // Needs to be static because it's used by the system later.
   static char date_text[] = "Mon, Jan 31"; // Needs to be static because it's used by the system later.
 
-  strftime(time_text, sizeof(time_text), "%I:%M %p", tick_time);
+  strftime(time_text, sizeof(time_text), "%H:%M", tick_time);
   text_layer_set_text(time_layer, time_text);
   
+ // strftime(date_text, sizeof(date_text), "%a, %b %d", tick_time);
   strftime(date_text, sizeof(date_text), "%a, %b %d", tick_time);
   text_layer_set_text(date_layer, date_text);
 
@@ -62,32 +63,28 @@ static void handle_bluetooth(bool connected) {
   }
 }
 
-void out_sent_handler(DictionaryIterator *sent, void *context) {
-   // outgoing message was delivered
-}
-
-void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
-   // outgoing message failed
-}
-
 void in_received_handler(DictionaryIterator *received, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "In received called");
   // Check for fields you expect to receive
-  Tuple *invert_tuple = dict_find(received, KEY_INVERT);
-  Tuple *hour_tuple = dict_find(received, KEY_HOUR_STYLE);
+  Tuple *text_tuple = dict_find(received, AKEY_TEXT);
 
   // Act on the found fields received
-  if (invert_tuple) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Invert Screen: %s", invert_tuple->value->cstring);
-  }
-  if (hour_tuple) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "24 Hour Clock: %s", hour_tuple->value->cstring);
+  if (text_tuple) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Text: %s", text_tuple->value->cstring);
   }
 }
 
 void in_dropped_handler(AppMessageResult reason, void *context) {
    // incoming message dropped
    APP_LOG(APP_LOG_LEVEL_DEBUG, "Incoming message dropped");
+}
+
+void out_sent_handler(DictionaryIterator *sent, void *context) {
+   // outgoing message was delivered
+}
+
+void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
+   // outgoing message failed
 }
 
 // Handle the start-up of the app
@@ -122,7 +119,11 @@ static void do_init(void) {
 
   // Init the text layer used to show bluetooth connection
   connection_layer = text_layer_create(GRect(-2, 2, /* width */ frame.size.w, 34 /* height */));
-  text_layer_set_text_color(connection_layer, GColorWhite);
+  #ifdef PBL_COLOR
+    text_layer_set_text_color(connection_layer, GColorVividCerulean);
+  #else
+    text_layer_set_text_color(connection_layer, GColorWhite);
+  #endif
   text_layer_set_background_color(connection_layer, GColorClear);
   text_layer_set_font(connection_layer, awesome_font);
   text_layer_set_text_alignment(connection_layer, GTextAlignmentRight);
@@ -130,7 +131,11 @@ static void do_init(void) {
 
   // Init the text layer used to show the battery percentage
   battery_layer = text_layer_create(GRect(2, 2, /* width */ frame.size.w, 34 /* height */));
-  text_layer_set_text_color(battery_layer, GColorWhite);
+  #ifdef PBL_COLOR
+    text_layer_set_text_color(battery_layer, GColorSunsetOrange);
+  #else
+    text_layer_set_text_color(battery_layer, GColorWhite);
+  #endif
   text_layer_set_background_color(battery_layer, GColorClear);
   text_layer_set_font(battery_layer, awesome_font);
   text_layer_set_text_alignment(battery_layer, GTextAlignmentLeft);
@@ -180,6 +185,20 @@ static void do_deinit(void) {
   text_layer_destroy(charge_layer);
   window_destroy(window);
 }
+
+/* void set_text_color(int color) {
+  #ifdef PBL_COLOR
+		GColor text_color = GColorFromHEX(color);
+		text_layer_set_text_color(time_layer, text_color);
+		text_layer_set_text_color(date_layer, text_color);
+		text_layer_set_text_color(temp_layer, text_color);
+		text_layer_set_text_color(conditions_layer, text_color);
+		text_layer_set_text_color(temp_layer_unanimated, text_color);
+		text_layer_set_text_color(conditions_layer_unanimated, text_color);
+  #endif
+}
+
+*/
 
 // The main event/run loop for our app
 int main(void) {

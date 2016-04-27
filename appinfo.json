@@ -1,38 +1,49 @@
 {
-  "uuid": "7cb67653-827c-4f06-8c6a-73d17e5b181b",
-  "shortName": "RetroTime",
-  "longName": "RetroTime",
-  "companyName": "jonwgeorge",
-  "versionCode": 3,
-  "versionLabel": "1.0.3",
-  "watchapp": {
-    "watchface": true
-  },
-  "capabilities": [ "configurable" ],
-  "appKeys": { "invert": 0, "24hour": 0 },
-  "resources": {
-    "media": [
-      {
-        "menuIcon": true,
-        "type": "png",
-        "name": "IMAGE_MENU_ICON",
-        "file": "images/menu_icon_game_time.png"
-      },
-      {
-        "type": "font",
-        "name": "FONT_AWESOME_12",
-        "file": "fonts/fontawesome-webfont.ttf"
-      },
-      {
-        "type": "font",
-        "name": "MINECRAFTIA_24",
-        "file": "fonts/minecraftia.ttf"
-      },
-      {
-        "type": "font",
-        "name": "MINECRAFTIA_16",
-        "file": "fonts/minecraftia.ttf"
-      }
-    ]
-  }
+    "appKeys": {
+        "24hour": 0,
+        "invert": 0
+    },
+    "capabilities": [
+        "configurable"
+    ],
+    "companyName": "jonwgeorge/abonhote",
+    "enableMultiJS": false,
+    "longName": "RetroTime",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/menu_icon_game_time.png",
+                "menuIcon": true,
+                "name": "IMAGE_MENU_ICON",
+                "type": "png"
+            },
+            {
+                "file": "fonts/minecraftia.ttf",
+                "name": "MINECRAFTIA_16",
+                "type": "font"
+            },
+            {
+                "file": "fonts/minecraftia.ttf",
+                "name": "MINECRAFTIA_24",
+                "type": "font"
+            },
+            {
+                "file": "fonts/fontawesome-webfont.ttf",
+                "name": "FONT_AWESOME_12",
+                "type": "font"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "RetroTime",
+    "targetPlatforms": [
+        "aplite",
+        "basalt"
+    ],
+    "uuid": "5e1722c1-d26d-4b7e-9e1e-cd6cec18b397",
+    "versionLabel": "1.1",
+    "watchapp": {
+        "watchface": true
+    }
 }
