@@ -1,15 +1,10 @@
 #Retro Time - a Pebble Watch Face
 
-*Up to date information on the development of Retro Time can be found on my [website](http://www.jonwgeorge.com/retro-time/)*
-
 Retro Time is a watchface designed for the Pebble smart-watch. It takes design influence from all those 8-bit games we loved as a kid. This code is open sourced under the Apache 2.0 license.
 
+Retro Time was created by [Jonathan George](https://github.com/jonwgeorge/Retro-Time) and colorized by André Bonhôte.
+
 Battery life is displayed as 4 iconic hearts, that depleat as the life of your pebble depleats. Retro Time keeps track of your bluetooth connection status and will give you a gentle reminder if you leave your phone behind.
-
-Retro time can be downloaded on [MyPebleFaces.com](http://www.mypebblefaces.com/apps/12135/7967/) or via my dropbox mirrors (just in case MPF is down).
-
-####Dropbox Mirrors
-[Retro Time](https://dl.dropboxusercontent.com/u/42779824/pebble/retro-time.pbw) - [Retro Time Inverted](https://dl.dropboxusercontent.com/u/42779824/pebble/retro-time-inverted.pbw)
 
 <div id="features"></div>
 
