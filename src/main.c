@@ -35,17 +35,17 @@ static void handle_battery(BatteryChargeState charge_state) {
   } else {
     snprintf(charge_text, sizeof(charge_text), "   ");
   }
-  
+
   text_layer_set_text(battery_layer, battery_text);
   text_layer_set_text(charge_layer, charge_text);
 }
 
 // Called once per second
 static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
-  static char time_text[] = "00:00"; // Needs to be static because it's used by the system later.
+  static char time_text[] = "00:00 AM"; // Needs to be static because it's used by the system later.
   static char date_text[] = "Mon, Jan 31"; // Needs to be static because it's used by the system later.
 
-  strftime(time_text, sizeof(time_text), "%H:%M", tick_time);
+  strftime(time_text, sizeof(time_text), "%I:%M %p", tick_time);
   text_layer_set_text(time_layer, time_text);
   
  // strftime(date_text, sizeof(date_text), "%a, %b %d", tick_time);
@@ -101,50 +101,56 @@ static void do_init(void) {
   GFont minecraft_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_MINECRAFTIA_24));
   GFont minecraft_font_small = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_MINECRAFTIA_16));
 
-  // Init the text layer used to show the time
+  // Init Layers
   time_layer = text_layer_create(GRect(0, 63, frame.size.w /* width */, 34/* height */));
+  date_layer = text_layer_create(GRect(0, 93, frame.size.w /* width */, 34/* height */));
+  connection_layer = text_layer_create(GRect(-2, 2, /* width */ frame.size.w, 34 /* height */));
+  battery_layer = text_layer_create(GRect(2, 2, /* width */ frame.size.w, 34 /* height */));
+  charge_layer = text_layer_create(GRect(64, 2, /* width */ frame.size.w, 34 /* height */));
+  
+  // Set Colors, if required
   text_layer_set_text_color(time_layer, GColorWhite);
   text_layer_set_background_color(time_layer, GColorClear);
+  
+  text_layer_set_text_color(date_layer, GColorWhite);
+  text_layer_set_background_color(date_layer, GColorClear);
+  
+  text_layer_set_background_color(connection_layer, GColorClear);
+  text_layer_set_background_color(battery_layer, GColorClear);
+  text_layer_set_background_color(charge_layer, GColorClear);
+  
+    
+  #ifdef PBL_COLOR
+    text_layer_set_text_color(connection_layer, GColorVividCerulean);
+    text_layer_set_text_color(battery_layer, GColorSunsetOrange);
+    text_layer_set_text_color(charge_layer, GColorIcterine);
+  #else
+    text_layer_set_text_color(connection_layer, GColorWhite);
+    text_layer_set_text_color(battery_layer, GColorWhite);
+    text_layer_set_text_color(charge_layer, GColorWhite);
+  #endif
+    
+  // Init the text layer used to show the time
   text_layer_set_font(time_layer, minecraft_font);
   text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
   text_layer_set_text(time_layer, " : ");
   
-  // Init the text layer used to show the date
-  date_layer = text_layer_create(GRect(0, 93, frame.size.w /* width */, 34/* height */));
-  text_layer_set_text_color(date_layer, GColorWhite);
-  text_layer_set_background_color(date_layer, GColorClear);
+  // Init the text layer used to show the date  
   text_layer_set_font(date_layer, minecraft_font_small);
   text_layer_set_text_alignment(date_layer, GTextAlignmentCenter);
   text_layer_set_text(date_layer, "Mon, Jan 31");
 
   // Init the text layer used to show bluetooth connection
-  connection_layer = text_layer_create(GRect(-2, 2, /* width */ frame.size.w, 34 /* height */));
-  #ifdef PBL_COLOR
-    text_layer_set_text_color(connection_layer, GColorVividCerulean);
-  #else
-    text_layer_set_text_color(connection_layer, GColorWhite);
-  #endif
-  text_layer_set_background_color(connection_layer, GColorClear);
   text_layer_set_font(connection_layer, awesome_font);
   text_layer_set_text_alignment(connection_layer, GTextAlignmentRight);
   text_layer_set_text(connection_layer, "\uf09e");
 
   // Init the text layer used to show the battery percentage
-  battery_layer = text_layer_create(GRect(2, 2, /* width */ frame.size.w, 34 /* height */));
-  #ifdef PBL_COLOR
-    text_layer_set_text_color(battery_layer, GColorSunsetOrange);
-  #else
-    text_layer_set_text_color(battery_layer, GColorWhite);
-  #endif
-  text_layer_set_background_color(battery_layer, GColorClear);
   text_layer_set_font(battery_layer, awesome_font);
   text_layer_set_text_alignment(battery_layer, GTextAlignmentLeft);
   text_layer_set_text(battery_layer, "\uf004 \uf004 \uf004 \uf004");
   
   // Init the text layer used to show the battery charge state
-  charge_layer = text_layer_create(GRect(64, 2, /* width */ frame.size.w, 34 /* height */));
-  text_layer_set_text_color(charge_layer, GColorWhite);
-  text_layer_set_background_color(charge_layer, GColorClear);
   text_layer_set_font(charge_layer, awesome_font);
   text_layer_set_text_alignment(charge_layer, GTextAlignmentLeft);
   text_layer_set_text(charge_layer, "\uf004 \uf004 \uf004 \uf004");
@@ -186,19 +192,6 @@ static void do_deinit(void) {
   window_destroy(window);
 }
 
-/* void set_text_color(int color) {
-  #ifdef PBL_COLOR
-		GColor text_color = GColorFromHEX(color);
-		text_layer_set_text_color(time_layer, text_color);
-		text_layer_set_text_color(date_layer, text_color);
-		text_layer_set_text_color(temp_layer, text_color);
-		text_layer_set_text_color(conditions_layer, text_color);
-		text_layer_set_text_color(temp_layer_unanimated, text_color);
-		text_layer_set_text_color(conditions_layer_unanimated, text_color);
-  #endif
-}
-
-*/
 
 // The main event/run loop for our app
 int main(void) {
