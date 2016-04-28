@@ -1,4 +1,5 @@
 // Standard includes
+<<<<<<< HEAD:src/retro-time.c
 #include "pebble.h"
 #ifdef PBL_COLOR
   #include "gcolor_definitions.h"
@@ -23,6 +24,13 @@ enum {
   WEATHER_TEMPERATURE_KEY,
   WEATHER_DESCRIPTION_KEY,
   REFRESH_INTERVAL_KEY
+=======
+#include <pebble.h>
+
+enum {
+  AKEY_NUMBER,
+  AKEY_TEXT,
+>>>>>>> d85fd0af28b5f066d3538588034dc47ff7c6ab75:src/main.c
 };
 
 // App-specific data
@@ -82,7 +90,7 @@ static void handle_battery(BatteryChargeState charge_state) {
   } else {
     snprintf(charge_text, sizeof(charge_text), "   ");
   }
-  
+
   text_layer_set_text(battery_layer, battery_text);
   text_layer_set_text(charge_layer, charge_text);
 }
@@ -102,6 +110,7 @@ static void handle_minute_tick(struct tm* tick_time, TimeUnits units_changed) {
   strftime(time_text, sizeof(time_text), time_format, tick_time);
   text_layer_set_text(time_layer, time_text);
   
+ // strftime(date_text, sizeof(date_text), "%a, %b %d", tick_time);
   strftime(date_text, sizeof(date_text), "%a, %b %d", tick_time);
   text_layer_set_text(date_layer, date_text);
   
@@ -121,6 +130,7 @@ static void handle_bluetooth(bool connected) {
   }
 }
 
+<<<<<<< HEAD:src/retro-time.c
 void out_sent_handler(DictionaryIterator *sent, void *context) {
   
 }
@@ -129,9 +139,12 @@ void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, voi
    // outgoing message failed
 }
 
+=======
+>>>>>>> d85fd0af28b5f066d3538588034dc47ff7c6ab75:src/main.c
 void in_received_handler(DictionaryIterator *received, void *context) {
   APP_LOG(APP_LOG_LEVEL_DEBUG, "Settings received...");
   // Check for fields you expect to receive
+<<<<<<< HEAD:src/retro-time.c
   Tuple *invert_tuple = dict_find(received, STYLE_KEY);
   Tuple *bluetooth_tuple = dict_find(received, BLUETOOTHVIBE_KEY);
   Tuple *chime_tuple = dict_find(received, HOURLYVIBE_KEY);
@@ -174,6 +187,13 @@ void in_received_handler(DictionaryIterator *received, void *context) {
   if (interval_tuple) {
     persist_write_int(REFRESH_INTERVAL_KEY, interval_tuple->value->uint16);
     APP_LOG(APP_LOG_LEVEL_DEBUG, "Interval received...");
+=======
+  Tuple *text_tuple = dict_find(received, AKEY_TEXT);
+
+  // Act on the found fields received
+  if (text_tuple) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Text: %s", text_tuple->value->cstring);
+>>>>>>> d85fd0af28b5f066d3538588034dc47ff7c6ab75:src/main.c
   }
   
   // Update static variables and reset theme if needed
@@ -199,6 +219,14 @@ void in_dropped_handler(AppMessageResult reason, void *context) {
    APP_LOG(APP_LOG_LEVEL_DEBUG, "Incoming message dropped");
 }
 
+void out_sent_handler(DictionaryIterator *sent, void *context) {
+   // outgoing message was delivered
+}
+
+void out_failed_handler(DictionaryIterator *failed, AppMessageResult reason, void *context) {
+   // outgoing message failed
+}
+
 // Handle the start-up of the app
 static void do_init(void) {
 
@@ -213,18 +241,53 @@ static void do_init(void) {
   GFont minecraft_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_MINECRAFTIA_24));
   GFont minecraft_font_small = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_MINECRAFTIA_16));
 
+<<<<<<< HEAD:src/retro-time.c
   // Init the text layer used to show the time
   time_layer = text_layer_create(GRect(0, 115, frame.size.w /* width */, 34/* height */));
+=======
+  // Init Layers
+  time_layer = text_layer_create(GRect(0, 63, frame.size.w /* width */, 34/* height */));
+  date_layer = text_layer_create(GRect(0, 93, frame.size.w /* width */, 34/* height */));
+  connection_layer = text_layer_create(GRect(-2, 2, /* width */ frame.size.w, 34 /* height */));
+  battery_layer = text_layer_create(GRect(2, 2, /* width */ frame.size.w, 34 /* height */));
+  charge_layer = text_layer_create(GRect(64, 2, /* width */ frame.size.w, 34 /* height */));
+  
+  // Set Colors, if required
+>>>>>>> d85fd0af28b5f066d3538588034dc47ff7c6ab75:src/main.c
   text_layer_set_text_color(time_layer, GColorWhite);
   text_layer_set_background_color(time_layer, GColorClear);
+  
+  text_layer_set_text_color(date_layer, GColorWhite);
+  text_layer_set_background_color(date_layer, GColorClear);
+  
+  text_layer_set_background_color(connection_layer, GColorClear);
+  text_layer_set_background_color(battery_layer, GColorClear);
+  text_layer_set_background_color(charge_layer, GColorClear);
+  
+    
+  #ifdef PBL_COLOR
+    text_layer_set_text_color(connection_layer, GColorVividCerulean);
+    text_layer_set_text_color(battery_layer, GColorSunsetOrange);
+    text_layer_set_text_color(charge_layer, GColorIcterine);
+  #else
+    text_layer_set_text_color(connection_layer, GColorWhite);
+    text_layer_set_text_color(battery_layer, GColorWhite);
+    text_layer_set_text_color(charge_layer, GColorWhite);
+  #endif
+    
+  // Init the text layer used to show the time
   text_layer_set_font(time_layer, minecraft_font);
   text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
   text_layer_set_text(time_layer, " : ");
   
+<<<<<<< HEAD:src/retro-time.c
   // Init the text layer used to show the date
   date_layer = text_layer_create(GRect(0, 145, frame.size.w /* width */, 34/* height */));
   text_layer_set_text_color(date_layer, GColorWhite);
   text_layer_set_background_color(date_layer, GColorClear);
+=======
+  // Init the text layer used to show the date  
+>>>>>>> d85fd0af28b5f066d3538588034dc47ff7c6ab75:src/main.c
   text_layer_set_font(date_layer, minecraft_font_small);
   text_layer_set_text_alignment(date_layer, GTextAlignmentCenter);
   text_layer_set_text(date_layer, "Mon, Jan 31");
@@ -238,14 +301,12 @@ static void do_init(void) {
   text_layer_set_text(temp_layer, "999°F");
 
   // Init the text layer used to show bluetooth connection
-  connection_layer = text_layer_create(GRect(-2, 2, /* width */ frame.size.w, 34 /* height */));
-  text_layer_set_text_color(connection_layer, GColorWhite);
-  text_layer_set_background_color(connection_layer, GColorClear);
   text_layer_set_font(connection_layer, awesome_font);
   text_layer_set_text_alignment(connection_layer, GTextAlignmentRight);
   text_layer_set_text(connection_layer, "\uf09e");
 
   // Init the text layer used to show the battery percentage
+<<<<<<< HEAD:src/retro-time.c
   battery_layer = text_layer_create(GRect(2, 2, /* width */ frame.size.w, 34 /* height */));
   #ifdef PBL_COLOR
     text_layer_set_text_color(battery_layer, GColorRed);
@@ -253,14 +314,13 @@ static void do_init(void) {
     text_layer_set_text_color(battery_layer, GColorWhite);
   #endif
   text_layer_set_background_color(battery_layer, GColorClear);
+=======
+>>>>>>> d85fd0af28b5f066d3538588034dc47ff7c6ab75:src/main.c
   text_layer_set_font(battery_layer, awesome_font);
   text_layer_set_text_alignment(battery_layer, GTextAlignmentLeft);
   text_layer_set_text(battery_layer, "\uf004 \uf004 \uf004 \uf004");
   
   // Init the text layer used to show the battery charge state
-  charge_layer = text_layer_create(GRect(64, 2, /* width */ frame.size.w, 34 /* height */));
-  text_layer_set_text_color(charge_layer, GColorWhite);
-  text_layer_set_background_color(charge_layer, GColorClear);
   text_layer_set_font(charge_layer, awesome_font);
   text_layer_set_text_alignment(charge_layer, GTextAlignmentLeft);
   text_layer_set_text(charge_layer, "\uf004 \uf004 \uf004 \uf004");
@@ -312,6 +372,7 @@ static void do_deinit(void) {
   inverter_layer_destroy(inverter_layer);
   window_destroy(window);
 }
+
 
 // The main event/run loop for our app
 int main(void) {
